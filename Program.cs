@@ -23,8 +23,7 @@ namespace Collector
             }
 
             Console.ReadLine();
-        }
-      
+        }      
 
     }
 
