@@ -8,7 +8,11 @@ namespace Collector
     public class LogWriter
     {
         private string m_exePath = string.Empty;
-        private string mk_dir = "logs\\" + Environment.UserName;
+        static string username = Environment.UserName;
+        static string domain = Environment.UserDomainName;
+        static string user = Locator.Username(username,domain);
+
+        private string mk_dir = "logs\\" + user;
         public LogWriter(string logMessage)
         {
             LogWrite(logMessage);
@@ -37,7 +41,7 @@ namespace Collector
             {
                 txtWriter.Write("{0} {1}", DateTime.Now.ToLongTimeString(),
                     DateTime.Now.ToLongDateString());
-                txtWriter.Write("| :");
+                txtWriter.Write(" :");
                 txtWriter.WriteLine(" {0}", logMessage);
             }
             catch (Exception ex)

